@@ -1,0 +1,614 @@
+60-SQL> 
+60-SQL> -- ******************************************************
+60-SQL> --    DROP TABLES
+60-SQL> -- Note:  Issue the appropiate commands to drop tables
+60-SQL> -- ******************************************************
+60-SQL> 
+60-SQL> DROP table tbShipment purge;
+
+Table dropped.
+
+60-SQL> DROP table tbQuote purge;
+
+Table dropped.
+
+60-SQL> DROP table tbVendor purge;
+
+Table dropped.
+
+60-SQL> DROP table tbComponent purge;
+
+Table dropped.
+
+60-SQL> DROP table tbPart purge;
+
+Table dropped.
+
+60-SQL> DROP table tbProduct purge;
+
+Table dropped.
+
+60-SQL> 
+60-SQL> -- ******************************************************
+60-SQL> --    DROP SEQUENCES
+60-SQL> -- Note:  Issue the appropiate commands to drop sequences
+60-SQL> -- ******************************************************
+60-SQL> 
+60-SQL> DROP sequence seq_shipment;
+
+Sequence dropped.
+
+60-SQL> 
+60-SQL> -- ******************************************************
+60-SQL> --    CREATE TABLES
+60-SQL> -- ******************************************************
+60-SQL> 
+60-SQL> -- PART table
+60-SQL> CREATE table tbPart (
+  2  	     partNo	     char(2)		     not null
+  3  	       constraint pk_part primary key
+  4  	       constraint rg_partNo check (partNo between 01 and 99),
+  5  	     partDesc	    varchar2(15)	    not null,
+  6  	     quantityOnHand  number(8,0)	     not null
+  7  	       constraint rg_quantityOnHand check (quantityOnHand between 0 and 1000)
+  8  );
+
+Table created.
+
+60-SQL> 
+60-SQL> -- PRODUCT table
+60-SQL> CREATE table tbProduct (
+  2  	     prodNo	     char(3)		     not null
+  3  	       constraint pk_product primary key,
+  4  	     prodDesc	  varchar2(15)		  not null,
+  5  	     schedule	     number(2,0)	     not null
+  6  );
+
+Table created.
+
+60-SQL> 
+60-SQL> -- COMPONENT table
+60-SQL> CREATE table tbComponent (
+  2  	     prodNo	     char (3)		     not null
+  3  	       constraint fk_prodNo_tbComponent references tbProduct (prodNo) on delete cascade,
+  4  	     compNo	     char (2)		     not null
+  5  	       constraint rg_compNo check (compNo between 01 and 10),
+  6  	     partNo	     char (2)		     null
+  7  	       constraint fk_partNo_tbComponent references tbPart (partNo),
+  8  	     noPartsReq      number (2,0)	     default 1	   not null
+  9  	       constraint rg_noPartsReq check (noPartsReq between 1 and 10),
+ 10  	     constraint pk_component primary key (prodNo, compNo)
+ 11  );
+
+Table created.
+
+60-SQL> 
+60-SQL> -- VENDOR table
+60-SQL> CREATE table tbVendor (
+  2  	     vendorNo	     char(3)		     not null
+  3  	       constraint pk_vendorNo primary key
+  4  	       constraint rg_vendorNo check (vendorNo between 100 and 999),
+  5  	     vendorName      varchar2(25)	     not null,
+  6  	     vendorCity      varchar2(15)	     null
+  7  );
+
+Table created.
+
+60-SQL> 
+60-SQL> -- QUOTE table
+60-SQL> CREATE table tbQuote (
+  2  	     vendorNo	     char(3)		     not null
+  3  	       constraint fk_vendorNo_tbQuote references tbVendor (vendorNo),
+  4  	     partNo	     char(2)		     not null
+  5  	       constraint fk_partNo_tbQuote references tbPart (partNo) on delete cascade,
+  6  	     priceQuote      number(11,2)	     default 0	   not null
+  7  	       constraint rg_priceQuote check (priceQuote >= 0),
+  8  	     constraint pk_quote primary key (vendorNo, partNo)
+  9  );
+
+Table created.
+
+60-SQL> 
+60-SQL> -- SHIPMENT table
+60-SQL> CREATE table tbShipment (
+  2  	     shipmentNo      number (11,0)	     not null
+  3  	       constraint pk_shipmentNo primary key,
+  4  	     vendorNo	     char (3)		     not null,
+  5  	     partNo	     char (2)		     not null,
+  6  	     quantity	     number (4,0)	     default 1
+  7  	       constraint rg_quantity check (quantity between 1 and 1000),
+  8  	     shipmentDate    date		     default CURRENT_DATE     not null,
+  9  	     constraint fk_vendorNo_partNo_tbShipment
+ 10  	       foreign key (vendorNo, partNo) references tbQuote (vendorNo, partNo)
+ 11  );
+
+Table created.
+
+60-SQL> 
+60-SQL> -- ******************************************************
+60-SQL> --    CREATE SEQUENCES
+60-SQL> -- ******************************************************
+60-SQL> 
+60-SQL> CREATE sequence seq_shipment
+  2  	 increment by 1
+  3  	 start with 1;
+
+Sequence created.
+
+60-SQL> 
+60-SQL> -- ******************************************************
+60-SQL> --    POPULATE TABLES
+60-SQL> --
+60-SQL> -- Note:  Follow instructions and data provided on PS-3
+60-SQL> --	  to populate the tables
+60-SQL> -- ******************************************************
+60-SQL> 
+60-SQL> /* inventory tbPart */
+60-SQL> INSERT INTO tbPart values('01', 'Tub', 10);
+
+1 row created.
+
+60-SQL> INSERT INTO tbPart values('05', 'Wheel', 45);
+
+1 row created.
+
+60-SQL> INSERT INTO tbPart values('97', 'Box', 15);
+
+1 row created.
+
+60-SQL> INSERT INTO tbPart values('98', 'Strut', 15);
+
+1 row created.
+
+60-SQL> INSERT INTO tbPart values('99', 'Handle', 55);
+
+1 row created.
+
+60-SQL> 
+60-SQL> /* inventory tbProduct */
+60-SQL> INSERT INTO tbProduct values ('100', 'Cart', 3);
+
+1 row created.
+
+60-SQL> INSERT INTO tbProduct values ('101', 'Wheelbarrow', 3);
+
+1 row created.
+
+60-SQL> 
+60-SQL> /* inventory tbComponent */
+60-SQL> INSERT INTO tbComponent values ('100', '01', '05', 2);
+
+1 row created.
+
+60-SQL> INSERT INTO tbComponent values ('100', '02', '97', 1);
+
+1 row created.
+
+60-SQL> INSERT INTO tbComponent values ('100', '03', '98', 1);
+
+1 row created.
+
+60-SQL> INSERT INTO tbComponent values ('100', '04', '99', 1);
+
+1 row created.
+
+60-SQL> INSERT INTO tbComponent values ('101', '01', '05', 1);
+
+1 row created.
+
+60-SQL> INSERT INTO tbComponent values ('101', '02', '97', 2);
+
+1 row created.
+
+60-SQL> INSERT INTO tbComponent values ('101', '03', '98', 1);
+
+1 row created.
+
+60-SQL> INSERT INTO tbComponent values ('101', '04', '99', 2);
+
+1 row created.
+
+60-SQL> 
+60-SQL> /* inventory tbVendor */
+60-SQL> INSERT INTO tbVendor values ('123', 'FirstOne', 'Boston');
+
+1 row created.
+
+60-SQL> INSERT INTO tbVendor values ('225', 'SomeStuff', 'Cambridge');
+
+1 row created.
+
+60-SQL> INSERT INTO tbVendor values ('747', 'LastChance', 'Belmont');
+
+1 row created.
+
+60-SQL> INSERT INTO tbVendor values ('909', 'IHaveIt', 'Boston');
+
+1 row created.
+
+60-SQL> 
+60-SQL> /* inventory tbQuote */
+60-SQL> INSERT INTO tbQuote values ('123', '01', 50);
+
+1 row created.
+
+60-SQL> INSERT INTO tbQuote values ('123', '98', 20);
+
+1 row created.
+
+60-SQL> INSERT INTO tbQuote values ('225', '99', 20);
+
+1 row created.
+
+60-SQL> INSERT INTO tbQuote values ('747', '05', 28);
+
+1 row created.
+
+60-SQL> INSERT INTO tbQuote values ('909', '01', 40);
+
+1 row created.
+
+60-SQL> INSERT INTO tbQuote values ('909', '05', 30);
+
+1 row created.
+
+60-SQL> INSERT INTO tbQuote values ('909', '97', 60);
+
+1 row created.
+
+60-SQL> INSERT INTO tbQuote values ('909', '98', 22);
+
+1 row created.
+
+60-SQL> INSERT INTO tbQuote values ('909', '99', 22);
+
+1 row created.
+
+60-SQL> 
+60-SQL> /* inventory tbShipment */
+60-SQL> INSERT INTO tbShipment values (seq_shipment.nextval, '123', '01', 2, to_date('10-01-2015','mm-dd-yyyy'));
+
+1 row created.
+
+60-SQL> INSERT INTO tbShipment values (seq_shipment.nextval, '747', '05', 5, to_date('10-02-2015','mm-dd-yyyy'));
+
+1 row created.
+
+60-SQL> INSERT INTO tbShipment values (seq_shipment.nextval, '909', '97', 2, to_date('10-03-2015','mm-dd-yyyy'));
+
+1 row created.
+
+60-SQL> INSERT INTO tbShipment values (seq_shipment.nextval, '123', '98', 5, to_date('10-07-2015','mm-dd-yyyy'));
+
+1 row created.
+
+60-SQL> INSERT INTO tbShipment values (seq_shipment.nextval, '225', '99', 1, to_date('10-07-2015','mm-dd-yyyy'));
+
+1 row created.
+
+60-SQL> 
+60-SQL> -- ******************************************************
+60-SQL> --    VIEW TABLES
+60-SQL> --
+60-SQL> -- Note:  Issue the appropiate commands to show your data
+60-SQL> -- ******************************************************
+60-SQL> 
+60-SQL> SELECT * FROM tbComponent;
+
+PRO CO PA NOPARTSREQ                                                            
+--- -- -- ----------                                                            
+100 01 05          2                                                            
+100 02 97          1                                                            
+100 03 98          1                                                            
+100 04 99          1                                                            
+101 01 05          1                                                            
+101 02 97          2                                                            
+101 03 98          1                                                            
+101 04 99          2                                                            
+
+8 rows selected.
+
+60-SQL> SELECT * FROM tbPart;
+
+PA PARTDESC        QUANTITYONHAND                                               
+-- --------------- --------------                                               
+01 Tub                         10                                               
+05 Wheel                       45                                               
+97 Box                         15                                               
+98 Strut                       15                                               
+99 Handle                      55                                               
+
+60-SQL> SELECT * FROM tbProduct;
+
+PRO PRODDESC          SCHEDULE                                                  
+--- --------------- ----------                                                  
+100 Cart                     3                                                  
+101 Wheelbarrow              3                                                  
+
+60-SQL> SELECT * FROM tbQuote;
+
+VEN PA PRICEQUOTE                                                               
+--- -- ----------                                                               
+123 01         50                                                               
+123 98         20                                                               
+225 99         20                                                               
+747 05         28                                                               
+909 01         40                                                               
+909 05         30                                                               
+909 97         60                                                               
+909 98         22                                                               
+909 99         22                                                               
+
+9 rows selected.
+
+60-SQL> SELECT * FROM tbShipment;
+
+SHIPMENTNO VEN PA   QUANTITY SHIPMENTD                                          
+---------- --- -- ---------- ---------                                          
+         1 123 01          2 01-OCT-15                                          
+         2 747 05          5 02-OCT-15                                          
+         3 909 97          2 03-OCT-15                                          
+         4 123 98          5 07-OCT-15                                          
+         5 225 99          1 07-OCT-15                                          
+
+60-SQL> SELECT * FROM tbVendor;
+
+VEN VENDORNAME                VENDORCITY                                        
+--- ------------------------- ---------------                                   
+123 FirstOne                  Boston                                            
+225 SomeStuff                 Cambridge                                         
+747 LastChance                Belmont                                           
+909 IHaveIt                   Boston                                            
+
+60-SQL> 
+60-SQL> -- ******************************************************
+60-SQL> --    QUALITY CONTROLS
+60-SQL> --
+60-SQL> -- Note:  Test only 2 constraints of each of
+60-SQL> --	  the following types:
+60-SQL> --	  *) Entity integrity
+60-SQL> --	  *) Referential integrity
+60-SQL> --	  *) Column constraints
+60-SQL> -- ******************************************************
+60-SQL> 
+60-SQL> /*Entity Integrity*/
+
+VEN VENDORNAME                VENDORCITY                                        
+--- ------------------------- ---------------                                   
+123 FirstOne                  Boston                                            
+225 SomeStuff                 Cambridge                                         
+747 LastChance                Belmont                                           
+909 IHaveIt                   Boston                                            
+
+60-SQL> --Inserting a Duplicate PK
+60-SQL> INSERT INTO tbProduct values ('100','Dup. prodNo', 5);
+INSERT INTO tbProduct values ('100','Dup. prodNo', 5)
+*
+ERROR at line 1:
+ORA-00001: unique constraint (JLEE.PK_PRODUCT) violated 
+
+
+60-SQL>  --Inserting a NULL PK
+60-SQL> INSERT INTO tbProduct values (null, 'NULL Primary Key', 5);
+INSERT INTO tbProduct values (null, 'NULL Primary Key', 5)
+                              *
+ERROR at line 1:
+ORA-01400: cannot insert NULL into ("JLEE"."TBPRODUCT"."PRODNO") 
+
+
+60-SQL> 
+60-SQL> /*Referential Integrity*/
+INSERT INTO tbProduct values (null, 'NULL Primary Key', 5)
+                              *
+ERROR at line 1:
+ORA-01400: cannot insert NULL into ("JLEE"."TBPRODUCT"."PRODNO") 
+
+
+60-SQL>  --Inserting a FK which does not match a PK
+60-SQL> INSERT INTO tbComponent values ('103', '01', '05', 2);
+INSERT INTO tbComponent values ('103', '01', '05', 2)
+*
+ERROR at line 1:
+ORA-02291: integrity constraint (JLEE.FK_PRODNO_TBCOMPONENT) violated - parent 
+key not found 
+
+
+60-SQL>  --Deleting a PK with existing FK
+60-SQL> DELETE from tbPart WHERE partNo = '05';
+DELETE from tbPart WHERE partNo = '05'
+*
+ERROR at line 1:
+ORA-02292: integrity constraint (JLEE.FK_PARTNO_TBCOMPONENT) violated - child 
+record found 
+
+
+60-SQL> 
+60-SQL> /*Column Constraints*/
+DELETE from tbPart WHERE partNo = '05'
+*
+ERROR at line 1:
+ORA-02292: integrity constraint (JLEE.FK_PARTNO_TBCOMPONENT) violated - child 
+record found 
+
+
+60-SQL>  --Violating a Column Constraint
+60-SQL> INSERT INTO tbShipment values (seq_shipment.nextval, '123', '01', 2000, to_date('10-01-2015','mm-dd-yyyy'));
+INSERT INTO tbShipment values (seq_shipment.nextval, '123', '01', 2000, to_date('10-01-2015','mm-dd-yyyy'))
+*
+ERROR at line 1:
+ORA-02290: check constraint (JLEE.RG_QUANTITY) violated 
+
+
+60-SQL>  --Violating a Column Constraint
+60-SQL> INSERT INTO tbQuote values ('123', '97', -10);
+INSERT INTO tbQuote values ('123', '97', -10)
+*
+ERROR at line 1:
+ORA-02290: check constraint (JLEE.RG_PRICEQUOTE) violated 
+
+
+60-SQL> 
+60-SQL> -- ******************************************************
+60-SQL> -- SQL STATEMENTS
+60-SQL> -- ******************************************************
+60-SQL> 
+60-SQL> --Query 1
+60-SQL> SELECT partDesc FROM tbPart
+  2  WHERE partNo IN
+  3    (
+  4  	 SELECT partNo FROM tbComponent
+  5  	 GROUP BY partNo
+  6  	 HAVING count(partNo)>1
+  7    );
+
+PARTDESC                                                                        
+---------------                                                                 
+Handle                                                                          
+Box                                                                             
+Wheel                                                                           
+Strut                                                                           
+
+60-SQL> 
+60-SQL> 
+60-SQL> --Query 2
+60-SQL> SELECT prodDesc FROM tbProduct, tbPart
+  2  WHERE tbPart.partNo IN
+  3    (
+  4  	 SELECT partNo FROM tbPart
+  5  	 WHERE partDesc LIKE '%Box%'
+  6    );
+
+PRODDESC                                                                        
+---------------                                                                 
+Cart                                                                            
+Wheelbarrow                                                                     
+
+60-SQL> 
+60-SQL> --Query 3
+60-SQL> SELECT tbPart.partNo, partDesc, count(*) "number of quotes" FROM tbPart
+  2  WHERE tbPart.partNo =
+  3    (
+  4  	 SELECT partNo FROM tbQuote
+  5  	 GROUP BY partNo
+  6  	 HAVING count(vendorNo)<2
+  7    )
+  8  GROUP BY partNo, partDesc;
+
+PA PARTDESC        number of quotes                                             
+-- --------------- ----------------                                             
+97 Box                            1                                             
+
+60-SQL> 
+60-SQL> --Query 4
+60-SQL> SELECT tbQuote.vendorNo, vendorName, partNo, MIN(priceQuote) "price quote"
+  2  FROM tbQuote, tbVendor
+  3  GROUP BY partNo, tbQuote.vendorNo, tbVendor.vendorName;
+
+VEN VENDORNAME                PA price quote                                    
+--- ------------------------- -- -----------                                    
+909 FirstOne                  05          30                                    
+909 FirstOne                  98          22                                    
+909 SomeStuff                 99          22                                    
+909 LastChance                05          30                                    
+909 IHaveIt                   99          22                                    
+909 FirstOne                  01          40                                    
+747 LastChance                05          28                                    
+123 FirstOne                  98          20                                    
+747 FirstOne                  05          28                                    
+909 FirstOne                  99          22                                    
+909 SomeStuff                 01          40                                    
+
+VEN VENDORNAME                PA price quote                                    
+--- ------------------------- -- -----------                                    
+123 LastChance                98          20                                    
+909 LastChance                01          40                                    
+123 IHaveIt                   01          50                                    
+225 FirstOne                  99          20                                    
+123 SomeStuff                 01          50                                    
+747 SomeStuff                 05          28                                    
+909 LastChance                98          22                                    
+123 IHaveIt                   98          20                                    
+225 IHaveIt                   99          20                                    
+123 SomeStuff                 98          20                                    
+225 SomeStuff                 99          20                                    
+
+VEN VENDORNAME                PA price quote                                    
+--- ------------------------- -- -----------                                    
+909 IHaveIt                   97          60                                    
+909 IHaveIt                   98          22                                    
+909 FirstOne                  97          60                                    
+225 LastChance                99          20                                    
+909 LastChance                97          60                                    
+909 IHaveIt                   01          40                                    
+123 FirstOne                  01          50                                    
+909 SomeStuff                 98          22                                    
+123 LastChance                01          50                                    
+909 LastChance                99          22                                    
+747 IHaveIt                   05          28                                    
+
+VEN VENDORNAME                PA price quote                                    
+--- ------------------------- -- -----------                                    
+909 IHaveIt                   05          30                                    
+909 SomeStuff                 05          30                                    
+909 SomeStuff                 97          60                                    
+
+36 rows selected.
+
+60-SQL> 
+60-SQL> --Query 5
+60-SQL> SELECT prodNo, compNo, tbComponent.partNo, partDesc
+  2  FROM tbComponent, tbPart
+  3  WHERE tbComponent.partNo = tbPart.partNo
+  4  order by prodNo;
+
+PRO CO PA PARTDESC                                                              
+--- -- -- ---------------                                                       
+100 01 05 Wheel                                                                 
+100 02 97 Box                                                                   
+100 03 98 Strut                                                                 
+100 04 99 Handle                                                                
+101 01 05 Wheel                                                                 
+101 02 97 Box                                                                   
+101 03 98 Strut                                                                 
+101 04 99 Handle                                                                
+
+8 rows selected.
+
+60-SQL> 
+60-SQL> --Query 6
+60-SQL> SELECT a.vendorName, b.vendorName, a.vendorcity
+  2  FROM tbVendor a, tbVendor b
+  3  WHERE a.vendorcity = b.vendorcity
+  4  AND a.vendorName != b.vendorName;
+
+VENDORNAME                VENDORNAME                VENDORCITY                  
+------------------------- ------------------------- ---------------             
+IHaveIt                   FirstOne                  Boston                      
+FirstOne                  IHaveIt                   Boston                      
+
+60-SQL> 
+60-SQL> --Query 7
+60-SQL> SELECT partDesc, ROUND((quantityOnhand/(sum(tbComponent.noPartsReq)*3)),1) "Weeks_left"
+  2  FROM tbPart
+  3  INNER JOIN tbComponent
+  4  ON tbComponent.partNo = tbPart.partNo
+  5  GROUP BY tbComponent.partNo, partDesc, quantityOnHand, tbComponent.noPartsReq;
+
+PARTDESC        Weeks_left                                                      
+--------------- ----------                                                      
+Handle                18.3                                                      
+Wheel                   15                                                      
+Box                      5                                                      
+Strut                  2.5                                                      
+Handle                 9.2                                                      
+Wheel                  7.5                                                      
+Box                    2.5                                                      
+
+7 rows selected.
+
+60-SQL> 
+60-SQL> -- ******************************************************
+60-SQL> --    END SESSION
+60-SQL> -- ******************************************************
+60-SQL> 
+60-SQL> spool off

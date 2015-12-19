@@ -1,0 +1,124 @@
+60-SQL> 
+60-SQL> -- ******************************************************
+60-SQL> -- ViIEW TABLES
+60-SQL> -- ******************************************************
+60-SQL> 
+60-SQL> SELECT * FROM tbShipment;
+
+SHIPMENTNO VEN PA   QUANTITY SHIPMENTD                                          
+---------- --- -- ---------- ---------                                          
+         1 123 01          2 01-OCT-15                                          
+         2 747 05          5 02-OCT-15                                          
+         3 909 97          2 03-OCT-15                                          
+         4 123 98          5 07-OCT-15                                          
+         5 225 99          1 07-OCT-15                                          
+
+60-SQL> SELECT * FROM tbQuote;
+
+VEN PA PRICEQUOTE                                                               
+--- -- ----------                                                               
+123 01         50                                                               
+123 98         20                                                               
+225 99         20                                                               
+747 05         28                                                               
+909 01         40                                                               
+909 05         30                                                               
+909 97         60                                                               
+909 98         22                                                               
+909 99         22                                                               
+
+9 rows selected.
+
+60-SQL> SELECT * FROM tbVendor;
+
+VEN VENDORNAME                VENDORCITY                                        
+--- ------------------------- ---------------                                   
+123 FirstOne                  Boston                                            
+225 SomeStuff                 Cambridge                                         
+747 LastChance                Belmont                                           
+909 IHaveIt                   Boston                                            
+
+60-SQL> SELECT * FROM tbComponent;
+
+PRO CO PA NOPARTSREQ                                                            
+--- -- -- ----------                                                            
+100 01 05          2                                                            
+100 02 97          1                                                            
+100 03 98          1                                                            
+100 04 99          1                                                            
+101 01 05          1                                                            
+101 02 97          2                                                            
+101 03 98          1                                                            
+101 04 99          2                                                            
+
+8 rows selected.
+
+60-SQL> SELECT * FROM tbPart;
+
+PA PARTDESC        QUANTITYONHAND                                               
+-- --------------- --------------                                               
+01 Tub                         10                                               
+05 Wheel                       45                                               
+97 Box                         15                                               
+98 Strut                       15                                               
+99 Handle                      55                                               
+
+60-SQL> SELECT * FROM tbProduct;
+
+PRO PRODDESC          SCHEDULE                                                  
+--- --------------- ----------                                                  
+100 Cart                     3                                                  
+101 Wheelbarrow              3                                                  
+
+60-SQL> 
+60-SQL> -- ******************************************************
+60-SQL> -- PROJECT 1 - TRIGGER TO ENSURE ENTITY INTEGRITY
+60-SQL> -- ******************************************************
+60-SQL> 
+60-SQL> CREATE or REPLACE trigger TR_new_shipment_IN
+  2  	/* trigger executes BEFORE an INSERT into the SHIPMENT table */
+  3  	before insert on tbShipment
+  4  	/* trigger executes for each ROW being inserted */
+  5  	for each row
+  6  
+  7  	/* begins a PL/SQL Block */
+  8  	begin
+  9  	   /* get the next value of the PK sequence and today’s date */
+ 10  	   SELECT seq_shipment.nextval, sysdate
+ 11  	      /* insert them into the :NEW ROW columns */
+ 12  		into :new.shipmentNo, :new.shipmentDate
+ 13  		 FROM dual;
+ 14  	end TR_new_shipment_IN;
+ 15  .
+60-SQL> /
+
+Trigger created.
+
+60-SQL> 
+60-SQL> INSERT INTO tbShipment (vendorNo, partNo, quantity)
+  2  values ('123', '01', 5);
+
+1 row created.
+
+60-SQL> 
+60-SQL> INSERT INTO tbShipment (vendorNo, partNo, quantity)
+  2  values ('225', '99', 5);
+
+1 row created.
+
+60-SQL> 
+60-SQL> SELECT * FROM tbShipment;
+
+SHIPMENTNO VEN PA   QUANTITY SHIPMENTD                                          
+---------- --- -- ---------- ---------                                          
+         1 123 01          2 01-OCT-15                                          
+         2 747 05          5 02-OCT-15                                          
+         3 909 97          2 03-OCT-15                                          
+         4 123 98          5 07-OCT-15                                          
+         5 225 99          1 07-OCT-15                                          
+         6 123 01          5 22-NOV-15                                          
+         7 225 99          5 22-NOV-15                                          
+
+7 rows selected.
+
+60-SQL> exit
